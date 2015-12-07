@@ -1,5 +1,3 @@
-import Queue
-
 class Solution(object):
     def findMinHeightTrees(self, n, edges):
         """
@@ -7,42 +5,31 @@ class Solution(object):
         :type edges: List[List[int]]
         :rtype: List[int]
         """
+        adjacency_list = [[] for _ in xrange(n)]
+        degree = [0] * n
+        for s, t in edges:
+            adjacency_list[s].append(t)
+            adjacency_list[t].append(s)
+            degree[s] += 1
+            degree[t] += 1
 
-        neighbors = [[] for _ in xrange(n)]
-        for (s, t) in edges:
-            neighbors[s].append(t)
-            neighbors[t].append(s)
-        q = Queue.Queue()
-        q.put(0)
-        visit = {0}
+        queue = []
+        visit = set()
 
-        while not q.empty():
-            cur = q.get()
-            farthest = cur
-            for neighbor in neighbors[cur]:
-                if neighbor not in visit:
-                    q.put(neighbor)
-                    visit.add(neighbor)
+        for i, d in enumerate(degree):
+            if d <= 1:
+                queue.append(i)
 
-        mht_height = 0
-        stack = [farthest]
-        visit = {farthest}
-        while stack:
-            cur = stack[-1]
-            l = len(stack)
-            if l > mht_height:
-                if l % 2 == 0:
-                    ans = [stack[l / 2], stack[(l - 1) / 2]]
-                else:
-                    ans = [stack[l / 2]]
-                mht_height = l
+        while queue and len(visit) < n - 2:
+            nxtqueue = []
+            for v in queue:
+                visit.add(v)
+                for adj in adjacency_list[v]:
+                    if adj not in visit:
+                        degree[adj] -= 1
+                        if degree[adj] == 1:
+                            nxtqueue.append(adj)
+            queue = nxtqueue
 
-            for neighbor in neighbors[cur]:
-                if neighbor not in visit:
-                    stack.append(neighbor)
-                    visit.add(neighbor)
-                    break
-            else:
-                stack.pop()
-        return ans
+        return queue
 
