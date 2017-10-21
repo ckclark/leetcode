@@ -1,0 +1,1 @@
+SELECT `Weather`.`Id` FROM `Weather` LEFT JOIN `Weather` AS `yesterday` ON SUBDATE(`Weather`.`Date`, 1) = `yesterday`.`Date` WHERE `yesterday`.`Id` IS NOT NULL AND `Weather`.`Temperature` > `yesterday`.`Temperature`
