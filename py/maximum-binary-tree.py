@@ -6,20 +6,30 @@
 #         self.right = None
 
 class Solution(object):
-    def constructMaximumBinaryTree(self, nums, start=None, end=None):
+    def findMax(self, start, end):
+        bit_length = (end - start).bit_length() - 1
+        d = 1 << bit_length
+        return max(self.SparseTable[bit_length][start], self.SparseTable[bit_length][end - d])
+
+    def do_constructMaximumBinaryTree(self, start, end):
+        if start == end:
+            return None
+        v, i = self.findMax(start, end)
+        ret = TreeNode(v)
+        ret.left = self.do_constructMaximumBinaryTree(start, i)
+        ret.right = self.do_constructMaximumBinaryTree(i + 1, end)
+        return ret
+
+    def constructMaximumBinaryTree(self, nums):
         """
         :type nums: List[int]
         :rtype: TreeNode
         """
-        if start is None and end is None:
-            start, end = 0, len(nums)
-        if start == end:
-            return None
-        m, mi = nums[start], start
-        for i in xrange(start, end):
-            if nums[i] > m:
-                m, mi = nums[i], i
-        ret = TreeNode(m)
-        ret.left = self.constructMaximumBinaryTree(nums, start, mi)
-        ret.right = self.constructMaximumBinaryTree(nums, mi + 1, end)
-        return ret
+        self.SparseTable = [[(v, i) for i, v in enumerate(nums)]]
+        l = len(nums)
+        t = 1
+        while t * 2 < l:
+            prevTable = self.SparseTable[-1]
+            self.SparseTable.append([max(prevTable[i], prevTable[i + t]) for i in xrange(l - t * 2 + 1)])
+            t *= 2
+        return self.do_constructMaximumBinaryTree(0, l)
