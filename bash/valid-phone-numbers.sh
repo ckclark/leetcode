@@ -1,0 +1,1 @@
+grep "^\(([[:digit:]][[:digit:]][[:digit:]]) [[:digit:]][[:digit:]][[:digit:]]-[[:digit:]][[:digit:]][[:digit:]][[:digit:]]\|[[:digit:]][[:digit:]][[:digit:]]-[[:digit:]][[:digit:]][[:digit:]]-[[:digit:]][[:digit:]][[:digit:]][[:digit:]]\)$" file.txt
