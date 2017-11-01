@@ -1,5 +1,17 @@
-from collections import defaultdict, Counter
+from collections import Counter
 class Solution(object):
+    def dfs(self, dp, matrix, x, y, w, h):
+        v = matrix[x][y]
+        if dp[x, y] == 0:
+            dp[x, y] = 1 + max(
+                0 if x == 0 or matrix[x - 1][y] <= v else self.dfs(dp, matrix, x - 1, y, w, h),
+                0 if y == 0 or matrix[x][y - 1] <= v else self.dfs(dp, matrix, x, y - 1, w, h),
+                0 if x == h - 1 or matrix[x + 1][y] <= v else self.dfs(dp, matrix, x + 1, y, w, h),
+                0 if y == w - 1 or matrix[x][y + 1] <= v else self.dfs(dp, matrix, x, y + 1, w, h)
+            )
+
+        return dp[x, y]
+
     def longestIncreasingPath(self, matrix):
         """
         :type matrix: List[List[int]]
@@ -9,31 +21,10 @@ class Solution(object):
             return 0
         h = len(matrix)
         w = len(matrix[0])
-        neighbors = defaultdict(list)
-        in_deg = Counter()
-        longest_length = Counter()
-
-        ds = [(0, -1), (0, 1), (1, 0), (-1, 0)]
+        ans = 1
         starts = set(xrange(h * w))
+        dp = Counter()
         for x, row in enumerate(matrix):
             for y, v in enumerate(row):
-                for dx, dy in ds:
-                    nx, ny = x + dx, y + dy
-                    if 0 <= nx < h and 0 <= ny < w:
-                        if matrix[nx][ny] > v:
-                            neighbors[x * w + y].append(nx * w + ny)
-                            in_deg[nx * w + ny] += 1
-                            starts.discard(nx * w + ny)
-        for start in starts:
-            longest_length[start] = 1
-
-        q = list(starts)
-        ans = 1
-        for v in q:
-            for neighbor in neighbors[v]:
-                longest_length[neighbor] = max(longest_length[neighbor], longest_length[v] + 1)
-                ans = max(longest_length[neighbor], ans)
-                in_deg[neighbor] -= 1
-                if in_deg[neighbor] == 0:
-                    q.append(neighbor)
+                ans = max(ans, self.dfs(dp, matrix, x, y, w, h))
         return ans
