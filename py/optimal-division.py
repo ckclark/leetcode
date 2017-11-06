@@ -1,4 +1,3 @@
-from fractions import Fraction
 class Solution(object):
     def optimalDivision(self, nums):
         """
@@ -6,16 +5,40 @@ class Solution(object):
         :rtype: str
         """
         min_result, max_result = dict(), dict()
-        min_offset, max_offset = dict(), dict()
         lnums = len(nums)
-        def print_ans(start, end, need_max=True):
+
+        def find_cut(start, end, need_max):
+            if start + 1 == end:
+                return 0, (nums[start], 1)
+            if need_max and (start, end) in max_result:
+                return max_result[start, end]
+            if not need_max and (start, end) in min_result:
+                return min_result[start, end]
+
+            if need_max:
+                M, Mcut = None, None
+                for cut in xrange(start + 1, end):
+                    c1, v1 = find_cut(start, cut, True)
+                    c2, v2 = find_cut(cut, end, False)
+                    if M is None or v1[0] * v2[1] * M[1] > M[0] * v1[1] * v2[0]:
+                        M, Mcut = (v1[0] * v2[1], v1[1] * v2[0]), cut
+                max_result[start, end] = Mcut, M
+                return max_result[start, end]
+            else:
+                m, mcut = None, None
+                for cut in xrange(start + 1, end):
+                    c1, v1 = find_cut(start, cut, False)
+                    c2, v2 = find_cut(cut, end, True)
+                    if m is None or v1[0] * v2[1] * m[1] < m[0] * v1[1] * v2[0]:
+                        m, mcut = (v1[0] * v2[1], v1[1] * v2[0]), cut
+                min_result[start, end] = mcut, m
+                return min_result[start, end]
+
+        def print_ans(start, end, need_max):
             if start + 1 == end:
                 return str(nums[start])
 
-            if need_max:
-                cut = max_offset[start, end]
-            else:
-                cut = min_offset[start, end]
+            cut, val = find_cut(start, end, need_max)
             ans = print_ans(start, cut, need_max) + "/"
             if end - cut > 1:
                 ans += "("
@@ -24,22 +47,4 @@ class Solution(object):
                 ans += ")"
             return ans
 
-        for i, n in enumerate(nums):
-            min_result[i, i + 1] = max_result[i, i + 1] = Fraction(n)
-
-        for l in xrange(2, lnums + 1):
-            for i in xrange(lnums - l + 1):
-                m, M = None, None
-                mj, Mj = None, None
-                for j in xrange(1, l):
-                    tm = min_result[i, i + j] / max_result[i + j, i + l]
-                    tM = max_result[i, i + j] / min_result[i + j, i + l]
-                    if m is None or m > tm:
-                        m, mj = tm, i + j
-                    if M is None or M < tM:
-                        M, Mj = tM, i + j
-                min_result[i, i + l] = m
-                max_result[i, i + l] = M
-                min_offset[i, i + l] = mj
-                max_offset[i, i + l] = Mj
-        return print_ans(0, lnums)
+        return print_ans(0, lnums, True)
